@@ -47,7 +47,7 @@ const MARKDOWN = {
   '<strong>': '**',
   '</strong>': '** ',
   '<pre>': '\n```\n',
-  '</pre>': '\n```\n\n',
+  '</pre>': '```\n\n',
   '<code>': '`',
   '</code>': '`',
   '&lt;': '<',
