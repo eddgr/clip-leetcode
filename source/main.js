@@ -1,62 +1,62 @@
-const MAIN_COLOR = '#0CB345';
-const ALT_COLOR = 'transparent';
-const TEXT_COLOR = '#ffffff';
-const BUTTON_ACTION_TEXT = 'Copied!';
+const MAIN_COLOR = "#0CB345";
+const ALT_COLOR = "transparent";
+const TEXT_COLOR = "#ffffff";
+const BUTTON_ACTION_TEXT = "Copied!";
 const BUTTON_ACTION_WAIT_TIME = 1000;
 const WAIT_TIME = 5000;
 
 // Object containing button text and extra styles
 const BUTTON_MAP = {
-  'copy': {
-    text: 'Copy',
-    extra: 'margin-right: 1rem; width: 80px;',
+  copy: {
+    text: "Copy",
+    extra: "margin-right: 1rem; width: 80px;",
   },
-  'copyMarkdown': {
-    text: 'Copy Markdown',
-    extra: 'width: 128px;',
-  }
+  copyMarkdown: {
+    text: "Copy Markdown",
+    extra: "width: 128px;",
+  },
 };
 
 // Object containing html tags and their corresponding markdown syntax
 const MARKDOWN = {
-  '<div>': '',
-  '</div>': '',
-  '<p>': '',
-  '</p>': '',
-  '<u>': '',
-  '</u>': '',
-  '<ol>': '',
-  '</ol>': '',
-  '<ul>': '',
-  '</ul>': '',
-  '<li>': '- ',
-  '</li>': '',
-  '&nbsp;': '',
-  '<em>': '',
-  '</em>': '',
-  '<strong>Input</strong>': 'Input\n',
-  '<strong>Output</strong>': 'Output\n',
-  '<strong>Explanation</strong>': 'Explanation\n',
-  '<strong>Input:</strong>': 'Input:',
-  '<strong>Output:</strong>': 'Output:',
-  '<strong>Explanation:</strong>': 'Explanation:',
-  '<strong>Input: </strong>': 'Input: ',
-  '<strong>Output: </strong>': 'Output: ',
-  '<strong>Explanation: </strong>': 'Explanation: ',
-  '<strong class="example">Example': '**Example',
-  '<strong>': '**',
-  '</strong>': '** ',
-  '<pre>': '\n```\n',
-  '</pre>': '```\n\n',
-  '<code>': '`',
-  '</code>': '`',
-  '&lt;': '<',
-  '&gt;': '>',
-  '<sup>': '^',
-  '</sup>': '',
-  '	': '', // special tab
-  '<span.*?>': '',
-  '</span>': '',
+  "<div>": "",
+  "</div>": "",
+  "<p>": "",
+  "</p>": "",
+  "<u>": "",
+  "</u>": "",
+  "<ol>": "",
+  "</ol>": "",
+  "<ul>": "",
+  "</ul>": "",
+  "<li>": "- ",
+  "</li>": "",
+  "&nbsp;": "",
+  "<em>": "",
+  "</em>": "",
+  "<strong>Input</strong>": "Input\n",
+  "<strong>Output</strong>": "Output\n",
+  "<strong>Explanation</strong>": "Explanation\n",
+  "<strong>Input:</strong>": "Input:",
+  "<strong>Output:</strong>": "Output:",
+  "<strong>Explanation:</strong>": "Explanation:",
+  "<strong>Input: </strong>": "Input: ",
+  "<strong>Output: </strong>": "Output: ",
+  "<strong>Explanation: </strong>": "Explanation: ",
+  '<strong class="example">Example': "**Example",
+  "<strong>": "**",
+  "</strong>": "** ",
+  "<pre>": "\n```\n",
+  "</pre>": "```\n\n",
+  "<code>": "`",
+  "</code>": "`",
+  "&lt;": "<",
+  "&gt;": ">",
+  "<sup>": "^",
+  "</sup>": "",
+  "	": "", // special tab
+  "<span.*?>": "",
+  "</span>": "",
 };
 
 const copyText = (isMarkdown) => {
@@ -69,38 +69,49 @@ const copyText = (isMarkdown) => {
   let text;
   let html;
   try {
-    title = document.querySelector('[data-cy=question-title]').innerText;
+    title = document.querySelector("[data-cy=question-title]").innerText;
     descriptionContent = Array.from(
-      document.querySelector('[data-key=description-content]').children
+      document.querySelector("[data-key=description-content]").children
     )[0].children[1];
-    text = descriptionContent.textContent.replace(/(\n){2,}/g, '\n\n').trim();
+    text = descriptionContent.textContent.replace(/(\n){2,}/g, "\n\n").trim();
     html = descriptionContent.innerHTML;
     if (text == null || html == null) {
       throw "Old version elements not found";
     }
   } catch (err) {
     // If the elements for the old version are not found, try finding the elements for the new version.
-    title = document.querySelector('.mr-2.text-lg.font-medium.text-label-1.dark\\:text-dark-label-1').innerText;
-    descriptionContent = document.querySelector('._1l1MA');
-    text = descriptionContent.textContent.replace(/(\n){2,}/g, '\n\n').trim();
+    title = document.querySelector(
+      ".mr-2.text-lg.font-medium.text-label-1.dark\\:text-dark-label-1"
+    ).innerText;
+    descriptionContent = document.querySelector("._1l1MA");
+    text = descriptionContent.textContent.replace(/(\n){2,}/g, "\n\n").trim();
     html = descriptionContent.innerHTML;
     // Removes unwanted elements.
-    html = html.replace(/<div class=".*?" data-headlessui-state=".*?">/g, '')
-      .replace(/<div id=".*?" aria-expanded=".*?" data-headlessui-state=".*?">/g, '')
+    html = html
+      .replace(/<div class=".*?" data-headlessui-state=".*?">/g, "")
+      .replace(
+        /<div id=".*?" aria-expanded=".*?" data-headlessui-state=".*?">/g,
+        ""
+      );
   }
 
   // Create a hidden textarea element.
-  const hiddenElement = document.createElement('textarea');
+  const hiddenElement = document.createElement("textarea");
 
   let value;
   if (isMarkdown) {
     let htmlToMarkdown = html;
     // Replace HTML elements with markdown equivalents.
-    Object.keys(MARKDOWN).forEach(key => {
-      htmlToMarkdown = htmlToMarkdown.replace(new RegExp(key, 'g'), MARKDOWN[key]);
+    Object.keys(MARKDOWN).forEach((key) => {
+      htmlToMarkdown = htmlToMarkdown.replace(
+        new RegExp(key, "g"),
+        MARKDOWN[key]
+      );
     });
     // Format the markdown string and add the title and URL.
-    value = `# [${title}](${url})\n\n${htmlToMarkdown.replace(/(\n){2,}/g, '\n\n').trim()}`;
+    value = `# [${title}](${url})\n\n${htmlToMarkdown
+      .replace(/(\n){2,}/g, "\n\n")
+      .trim()}`;
   } else {
     // Format the plain text string and add the title and URL.
     value = `URL: ${url}\n\n${title}\n\n${text}`;
@@ -113,7 +124,7 @@ const copyText = (isMarkdown) => {
   // Select the text in the element.
   hiddenElement.select();
   // Copy the text.
-  document.execCommand('copy');
+  document.execCommand("copy");
   // Remove the hidden element from the document.
   document.body.removeChild(hiddenElement);
 };
@@ -124,10 +135,10 @@ setTimeout(() => {
   let target;
 
   // Create a container for the buttons.
-  const buttonContainer = document.createElement('div');
+  const buttonContainer = document.createElement("div");
 
   try {
-    target = document.querySelector('[data-cy=question-title]');
+    target = document.querySelector("[data-cy=question-title]");
     if (target == null) {
       throw "Old version elements not found";
     }
@@ -139,13 +150,22 @@ setTimeout(() => {
   `;
   } catch (err) {
     // If the old version elements are not found, try finding the new version elements.
-    target = document.querySelector('.mr-2.text-lg.font-medium.text-label-1.dark\\:text-dark-label-1');
-    buttonContainer.classList.add('mt-1', 'inline-flex', 'min-h-20px', 'items-center', 'space-x-2', 'align-top');
+    target = document.querySelector(
+      ".mr-2.text-lg.font-medium.text-label-1.dark\\:text-dark-label-1"
+    );
+    buttonContainer.classList.add(
+      "mt-1",
+      "inline-flex",
+      "min-h-20px",
+      "items-center",
+      "space-x-2",
+      "align-top"
+    );
   }
 
   if (target) {
     // Set the parent element's position to relative to allow for absolute positioning of the button container.
-    target.parentElement.style = 'position: relative';
+    target.parentElement.style = "position: relative";
 
     // Set the base style for the buttons.
     const buttonStyle = `
@@ -160,9 +180,9 @@ setTimeout(() => {
     `;
 
     // Loop through the buttons and add them to the button container.
-    const buttons = ['copy', 'copyMarkdown']
-    buttons.forEach(button => {
-      const _button = document.createElement('div');
+    const buttons = ["copy", "copyMarkdown"];
+    buttons.forEach((button) => {
+      const _button = document.createElement("div");
       // Styling.
       _button.innerText = BUTTON_MAP[button].text;
       _button.style = BUTTON_MAP[button].extra
@@ -170,8 +190,8 @@ setTimeout(() => {
         : buttonStyle;
 
       // Event listeners.
-      _button.addEventListener('click', () => {
-        copyText(button === 'copyMarkdown');
+      _button.addEventListener("click", () => {
+        copyText(button === "copyMarkdown");
         _button.innerText = BUTTON_ACTION_TEXT;
         setTimeout(
           () => (_button.innerText = BUTTON_MAP[button].text),
@@ -179,19 +199,19 @@ setTimeout(() => {
         );
       });
 
-      _button.addEventListener('mouseenter', () => {
+      _button.addEventListener("mouseenter", () => {
         _button.style.background = MAIN_COLOR;
         _button.style.color = TEXT_COLOR;
       });
 
-      _button.addEventListener('mouseleave', () => {
+      _button.addEventListener("mouseleave", () => {
         _button.style.background = ALT_COLOR;
         _button.style.color = MAIN_COLOR;
       });
 
       // Add the button to the button container.
       buttonContainer.append(_button);
-    })
+    });
 
     // Add the button container to the parent element.
     target.parentElement.appendChild(buttonContainer);
