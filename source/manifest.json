@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Clip LeetCode",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Copy the LeetCode problem to your clipboard.",
   "icons": {
     "128": "icon.png"
