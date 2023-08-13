@@ -69,10 +69,10 @@ const copyText = (isMarkdown) => {
   let text;
   let html;
   try {
-    title = document.querySelector("[data-cy=question-title]").innerText;
-    descriptionContent = Array.from(
-      document.querySelector("[data-key=description-content]").children
-    )[0].children[1];
+    title = document.querySelector(
+        ".mr-2.text-lg.font-medium.text-label-1.dark\\:text-dark-label-1"
+    ).innerText;
+    descriptionContent = document.querySelector('[data-track-load="description_content"]');
     text = descriptionContent.textContent.replace(/(\n){2,}/g, "\n\n").trim();
     html = descriptionContent.innerHTML;
     if (text == null || html == null) {
@@ -83,7 +83,7 @@ const copyText = (isMarkdown) => {
     title = document.querySelector(
       ".mr-2.text-lg.font-medium.text-label-1.dark\\:text-dark-label-1"
     ).innerText;
-    descriptionContent = document.querySelector("._1l1MA");
+    descriptionContent = document.querySelector(".xFUwe");
     text = descriptionContent.textContent.replace(/(\n){2,}/g, "\n\n").trim();
     html = descriptionContent.innerHTML;
     // Removes unwanted elements.
