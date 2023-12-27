@@ -3,7 +3,7 @@ const ALT_COLOR = "transparent";
 const TEXT_COLOR = "#ffffff";
 const BUTTON_ACTION_TEXT = "Copied!";
 const BUTTON_ACTION_WAIT_TIME = 1000;
-const WAIT_TIME = 5000;
+const WAIT_TIME = 1000;
 
 // Object containing button text and extra styles
 const BUTTON_MAP = {
@@ -57,35 +57,62 @@ const MARKDOWN = {
   "	": "", // special tab
   "<span.*?>": "",
   "</span>": "",
+  '<font face="monospace">': "",
+  "</font>": "",
 };
 
 const copyText = (isMarkdown) => {
   // Get the current URL.
   const url = window.location.href;
 
+  // Support Contest problems
+  let isContest = false;
+  let newVersion;
+
   // Try to find the elements for the old version of the website.
   let title;
   let descriptionContent;
   let text;
   let html;
-  try {
+
+  // Get title
+  title = document.querySelector(
+    ".mr-2.text-lg.font-medium.text-label-1.dark\\:text-dark-label-1"
+  )?.innerText;
+
+  if (!title) {
+    isContest = true;
     title = document.querySelector(
-        ".mr-2.text-lg.font-medium.text-label-1.dark\\:text-dark-label-1"
+      "#base_content > div.container > div > div > div.question-title.clearfix > h3"
     ).innerText;
-    descriptionContent = document.querySelector('[data-track-load="description_content"]');
-    text = descriptionContent.textContent.replace(/(\n){2,}/g, "\n\n").trim();
-    html = descriptionContent.innerHTML;
-    if (text == null || html == null) {
-      throw "Old version elements not found";
+  }
+
+  // Get main problem description
+  if (isContest) {
+    descriptionContent = document.querySelector(
+      "#base_content > div.container > div > div > div:nth-child(3) > div > div.question-content.default-content"
+    );
+  } else {
+    // Old Version
+    try {
+      descriptionContent = document.querySelector(
+        '[data-track-load="description_content"]'
+      );
+      if (descriptionContent === null) {
+        newVersion = true;
+        throw "Old version elements not found";
+      }
+      // New Version
+    } catch (err) {
+      descriptionContent = document.querySelector(".xFUwe");
     }
-  } catch (err) {
-    // If the elements for the old version are not found, try finding the elements for the new version.
-    title = document.querySelector(
-      ".mr-2.text-lg.font-medium.text-label-1.dark\\:text-dark-label-1"
-    ).innerText;
-    descriptionContent = document.querySelector(".xFUwe");
-    text = descriptionContent.textContent.replace(/(\n){2,}/g, "\n\n").trim();
-    html = descriptionContent.innerHTML;
+  }
+
+  // Clean the content to be copied
+  text = descriptionContent.textContent.replace(/(\n){2,}/g, "\n\n").trim();
+  html = descriptionContent.innerHTML;
+
+  if (newVersion) {
     // Removes unwanted elements.
     html = html
       .replace(/<div class=".*?" data-headlessui-state=".*?">/g, "")
@@ -139,7 +166,7 @@ setTimeout(() => {
 
   try {
     target = document.querySelector("[data-cy=question-title]");
-    if (target == null) {
+    if (target === null) {
       throw "Old version elements not found";
     }
     buttonContainer.style = `
@@ -153,14 +180,24 @@ setTimeout(() => {
     target = document.querySelector(
       ".mr-2.text-lg.font-medium.text-label-1.dark\\:text-dark-label-1"
     );
-    buttonContainer.classList.add(
-      "mt-1",
-      "inline-flex",
-      "min-h-20px",
-      "items-center",
-      "space-x-2",
-      "align-top"
-    );
+    if (target === null) {
+      // Support Contest problems
+      target = document.querySelector(
+        "#base_content > div.container > div > div > div.question-title.clearfix > h3"
+      );
+      buttonContainer.style = `
+        display: flex;
+      `;
+    } else {
+      buttonContainer.classList.add(
+        "mt-1",
+        "inline-flex",
+        "min-h-20px",
+        "items-center",
+        "space-x-2",
+        "align-top"
+      );
+    }
   }
 
   if (target) {

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Clip LeetCode",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Copy the LeetCode problem to your clipboard.",
   "icons": {
     "128": "icon.png"
@@ -12,7 +12,8 @@
         "main.js"
       ],
       "matches": [
-        "*://*.leetcode.com/problems/*"
+        "*://*.leetcode.com/problems/*",
+        "*://*.leetcode.com/contest/*/problems/*"
       ]
     }
   ]
