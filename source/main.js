@@ -61,13 +61,9 @@ const MARKDOWN = {
   "</font>": "",
 };
 
-const copyText = (isMarkdown) => {
+const copyText = (isMarkdown, targetObj) => {
   // Get the current URL.
   const url = window.location.href;
-
-  // Support Contest problems
-  let isContest = false;
-  let newVersion;
 
   // Try to find the elements for the old version of the website.
   let title;
@@ -76,51 +72,22 @@ const copyText = (isMarkdown) => {
   let html;
 
   // Get title
-  title = document.querySelector(
-    ".mr-2.text-lg.font-medium.text-label-1.dark\\:text-dark-label-1"
-  )?.innerText;
-
-  if (!title) {
-    isContest = true;
-    title = document.querySelector(
-      "#base_content > div.container > div > div > div.question-title.clearfix > h3"
-    ).innerText;
-  }
+  title = targetObj.titleDom.innerText;
 
   // Get main problem description
-  if (isContest) {
-    descriptionContent = document.querySelector(
-      "#base_content > div.container > div > div > div:nth-child(3) > div > div.question-content.default-content"
-    );
-  } else {
-    // Old Version
-    try {
-      descriptionContent = document.querySelector(
-        '[data-track-load="description_content"]'
-      );
-      if (descriptionContent === null) {
-        newVersion = true;
-        throw "Old version elements not found";
-      }
-      // New Version
-    } catch (err) {
-      descriptionContent = document.querySelector(".xFUwe");
-    }
-  }
+  descriptionContent = targetObj.descriptionDom;
 
   // Clean the content to be copied
   text = descriptionContent.textContent.replace(/(\n){2,}/g, "\n\n").trim();
   html = descriptionContent.innerHTML;
 
-  if (newVersion) {
-    // Removes unwanted elements.
-    html = html
-      .replace(/<div class=".*?" data-headlessui-state=".*?">/g, "")
-      .replace(
-        /<div id=".*?" aria-expanded=".*?" data-headlessui-state=".*?">/g,
-        ""
-      );
-  }
+  // Removes unwanted elements.
+  html = html
+    .replace(/<div class=".*?" data-headlessui-state=".*?">/g, "")
+    .replace(
+      /<div id=".*?" aria-expanded=".*?" data-headlessui-state=".*?">/g,
+      ""
+    );
 
   // Create a hidden textarea element.
   const hiddenElement = document.createElement("textarea");
@@ -158,51 +125,93 @@ const copyText = (isMarkdown) => {
 
 // Set a timeout to give the page time to load before adding the buttons.
 setTimeout(() => {
-  // Try to find the old version elements.
-  let target;
-
-  // Create a container for the buttons.
-  const buttonContainer = document.createElement("div");
-
-  try {
-    target = document.querySelector("[data-cy=question-title]");
-    if (target === null) {
-      throw "Old version elements not found";
-    }
-    buttonContainer.style = `
-    position: absolute;
-    top: 1rem;
-    right: 0;
-    display: flex;
-  `;
-  } catch (err) {
-    // If the old version elements are not found, try finding the new version elements.
-    target = document.querySelector(
-      ".mr-2.text-lg.font-medium.text-label-1.dark\\:text-dark-label-1"
-    );
-    if (target === null) {
-      // Support Contest problems
-      target = document.querySelector(
-        "#base_content > div.container > div > div > div.question-title.clearfix > h3"
-      );
-      buttonContainer.style = `
+  // Target Layouts
+  const TARGETS = [
+    {
+      name: "originalLayout",
+      titleDom: document.querySelector("[data-cy=question-title]"),
+      descriptionDom: document.querySelector(
+        "[data-track-load=description_content]"
+      ),
+      useStyle: true,
+      style: `
+        position: absolute;
+        top: 1rem;
+        right: 0;
         display: flex;
-      `;
-    } else {
-      buttonContainer.classList.add(
+      `,
+      classList: [],
+    },
+    {
+      name: "newLayout",
+      titleDom: document.querySelector(
+        ".mr-2.text-lg.font-medium.text-label-1.dark\\:text-dark-label-1"
+      ),
+      descriptionDom: document.querySelector(
+        "[data-track-load=description_content]"
+      ),
+      useStyle: false,
+      style: "",
+      classList: [
         "mt-1",
         "inline-flex",
         "min-h-20px",
         "items-center",
         "space-x-2",
-        "align-top"
-      );
+        "align-top",
+      ],
+    },
+    {
+      name: "contestLayout",
+      titleDom: document.querySelector(
+        "#base_content > div.container > div > div > div.question-title.clearfix > h3"
+      ),
+      descriptionDom: document.querySelector(
+        "div.question-content.default-content"
+      ),
+      useStyle: true,
+      style: `display: flex;`,
+      classList: [],
+    },
+    {
+      name: "dynamicLayout",
+      titleDom: document.querySelector(".text-title-large"),
+      descriptionDom: document.querySelector(
+        "[data-track-load=description_content]"
+      ),
+      useStyle: true,
+      style: `display: flex;`,
+      classList: [],
+    },
+  ];
+
+  // Determine which target layout.
+  let target;
+
+  // Create a container for the buttons.
+  const buttonContainer = document.createElement("div");
+
+  // Filter target DOM that is not null
+  const filteredTarget = TARGETS.filter((t) => {
+    const _target = t.titleDom;
+    if (_target) {
+      return _target;
     }
+  });
+
+  const targetObject = filteredTarget[0];
+  target = targetObject.titleDom;
+
+  // Style button by layout
+  if (targetObject.useStyle) {
+    buttonContainer.style = targetObject.style;
+  } else {
+    targetObject.classList.forEach((i) => buttonContainer.classList.add(i));
   }
 
   if (target) {
     // Set the parent element's position to relative to allow for absolute positioning of the button container.
-    target.parentElement.style = "position: relative";
+    target.parentElement.style = "position: relative; align-items: center";
 
     // Set the base style for the buttons.
     const buttonStyle = `
@@ -228,7 +237,7 @@ setTimeout(() => {
 
       // Event listeners.
       _button.addEventListener("click", () => {
-        copyText(button === "copyMarkdown");
+        copyText(button === "copyMarkdown", targetObject);
         _button.innerText = BUTTON_ACTION_TEXT;
         setTimeout(
           () => (_button.innerText = BUTTON_MAP[button].text),
