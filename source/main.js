@@ -164,40 +164,70 @@ setTimeout(() => {
   // Create a container for the buttons.
   const buttonContainer = document.createElement("div");
 
-  try {
-    target = document.querySelector("[data-cy=question-title]");
-    if (target === null) {
-      throw "Old version elements not found";
-    }
-    buttonContainer.style = `
-    position: absolute;
-    top: 1rem;
-    right: 0;
-    display: flex;
-  `;
-  } catch (err) {
-    // If the old version elements are not found, try finding the new version elements.
-    target = document.querySelector(
-      ".mr-2.text-lg.font-medium.text-label-1.dark\\:text-dark-label-1"
-    );
-    if (target === null) {
-      // Support Contest problems
-      target = document.querySelector(
-        "#base_content > div.container > div > div > div.question-title.clearfix > h3"
-      );
-      buttonContainer.style = `
+  // Check which layout is being used
+  const targets = [
+    {
+      name: "originalLayout",
+      domObject: document.querySelector("[data-cy=question-title]"),
+      useStyle: true,
+      style: `
+        position: absolute;
+        top: 1rem;
+        right: 0;
         display: flex;
-      `;
-    } else {
-      buttonContainer.classList.add(
+      `,
+      classList: [],
+    },
+    {
+      name: "newLayout",
+      domObject: document.querySelector(
+        ".mr-2.text-lg.font-medium.text-label-1.dark\\:text-dark-label-1"
+      ),
+      useStyle: false,
+      style: "",
+      classList: [
         "mt-1",
         "inline-flex",
         "min-h-20px",
         "items-center",
         "space-x-2",
-        "align-top"
-      );
+        "align-top",
+      ],
+    },
+    {
+      name: "contestLayout",
+      domObject: document.querySelector(
+        "#base_content > div.container > div > div > div.question-title.clearfix > h3"
+      ),
+      useStyle: true,
+      style: `display: flex;`,
+      classList: [],
+    },
+    {
+      name: "dynamicLayout",
+      domObject: document.querySelector(".text-title-large"),
+      useStyle: true,
+      style: `display: flex;`,
+      classList: [],
+    },
+  ];
+
+  // Filter target DOM that is not null
+  const filteredTarget = targets.filter((t) => {
+    const _target = t.domObject;
+    if (_target) {
+      return _target;
     }
+  });
+
+  const targetObject = filteredTarget[0];
+  target = targetObject.domObject;
+
+  // Style button by layout
+  if (targetObject.useStyle) {
+    buttonContainer.style = targetObject.style;
+  } else {
+    targetObject.classList.forEach((i) => buttonContainer.classList.add(i));
   }
 
   if (target) {
