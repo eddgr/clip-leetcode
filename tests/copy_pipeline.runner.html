@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>copy_pipeline regression – 3127</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 960px;
+        margin: 1.5rem auto;
+        padding: 0 1rem;
+      }
+      #fixture {
+        display: none;
+      }
+      .pass {
+        color: #0a7a2f;
+      }
+      .fail {
+        color: #b00020;
+      }
+      pre {
+        background: #f4f4f4;
+        padding: 0.75rem;
+        overflow: auto;
+        white-space: pre-wrap;
+      }
+      li {
+        margin: 0.35rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>copy_pipeline regression – problem 3127</h1>
+    <p id="summary"></p>
+    <ul id="results"></ul>
+    <h2>Markdown output</h2>
+    <pre id="md-out"></pre>
+    <h2>Plain text output</h2>
+    <pre id="plain-out"></pre>
+
+    <div id="fixture"></div>
+
+    <script src="../source/copy_pipeline.js"></script>
+    <script>
+      const TITLE = "3127. 构造相同颜色的正方形";
+      const URL =
+        "https://leetcode.cn/problems/make-a-square-with-the-same-color/description/";
+
+      const forbidden = [
+        ".grid-container",
+        "background-color",
+        "darkreader",
+        '<div class=',
+        "<code>",
+        "</code>",
+        "<b>",
+        "</b>",
+        '<strong class="example">',
+      ];
+
+      const assert = (name, condition) => ({ name, ok: Boolean(condition) });
+
+      const run = async () => {
+        const fixtureHtml = await fetch("./fixtures/problem-3127.html").then(
+          (r) => r.text()
+        );
+        document.getElementById("fixture").innerHTML = fixtureHtml;
+        const descriptionDom = document.querySelector(
+          "[data-track-load=description_content]"
+        );
+
+        const markdown = buildClipboardValue(descriptionDom, {
+          title: TITLE,
+          url: URL,
+          isMarkdown: true,
+        });
+        const plain = buildClipboardValue(descriptionDom, {
+          title: TITLE,
+          url: URL,
+          isMarkdown: false,
+        });
+
+        document.getElementById("md-out").textContent = markdown;
+        document.getElementById("plain-out").textContent = plain;
+
+        const checks = [
+          assert(
+            "Markdown title link",
+            markdown.startsWith(`# [${TITLE}](${URL})`)
+          ),
+          assert("Markdown has `3 x 3`", markdown.includes("`3 x 3`")),
+          assert("Markdown has **示例 1：**", markdown.includes("**示例 1：**")),
+          assert(
+            "Markdown has ASCII grid row B W B",
+            markdown.includes("B W B")
+          ),
+          assert(
+            "Markdown has full example-1 grid",
+            markdown.includes("B W B\nB W W\nB W B")
+          ),
+          assert(
+            "Markdown has **输入：**",
+            markdown.includes("**输入：**")
+          ),
+          ...forbidden.map((token) =>
+            assert(`Markdown forbids ${JSON.stringify(token)}`, !markdown.includes(token))
+          ),
+          assert("Plain starts with URL", plain.startsWith(`URL: ${URL}`)),
+          assert("Plain includes title", plain.includes(TITLE)),
+          assert("Plain has ASCII grid B W B", plain.includes("B W B")),
+          assert("Plain forbids CSS", !plain.includes("background-color")),
+          assert("Plain forbids darkreader", !plain.includes("darkreader")),
+          assert(
+            "Plain does not keep empty grid nbsp runs",
+            !/\n{4,}/.test(plain) && !plain.includes("\u00a0")
+          ),
+        ];
+
+        const list = document.getElementById("results");
+        let passed = 0;
+        checks.forEach((check) => {
+          const li = document.createElement("li");
+          li.className = check.ok ? "pass" : "fail";
+          li.textContent = `${check.ok ? "PASS" : "FAIL"} – ${check.name}`;
+          list.appendChild(li);
+          if (check.ok) {
+            passed += 1;
+          }
+        });
+
+        const summary = document.getElementById("summary");
+        summary.className = passed === checks.length ? "pass" : "fail";
+        summary.textContent = `${passed}/${checks.length} assertions passed`;
+      };
+
+      run().catch((err) => {
+        document.getElementById("summary").className = "fail";
+        document.getElementById("summary").textContent = String(err);
+      });
+    </script>
+  </body>
+</html>

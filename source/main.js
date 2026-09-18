@@ -17,109 +17,20 @@ const BUTTON_MAP = {
   },
 };
 
-// Object containing html tags and their corresponding markdown syntax
-const MARKDOWN = {
-  "<div>": "",
-  "</div>": "",
-  "<p>": "",
-  "</p>": "",
-  "<u>": "",
-  "</u>": "",
-  "<ol>": "",
-  "</ol>": "",
-  "<ul>": "",
-  "</ul>": "",
-  "<li>": "- ",
-  "</li>": "",
-  "&nbsp;": "",
-  "<em>": "",
-  "</em>": "",
-  "<strong>Input</strong>": "Input\n",
-  "<strong>Output</strong>": "Output\n",
-  "<strong>Explanation</strong>": "Explanation\n",
-  "<strong>Input:</strong>": "Input:",
-  "<strong>Output:</strong>": "Output:",
-  "<strong>Explanation:</strong>": "Explanation:",
-  "<strong>Input: </strong>": "Input: ",
-  "<strong>Output: </strong>": "Output: ",
-  "<strong>Explanation: </strong>": "Explanation: ",
-  '<strong class="example">Example': "**Example",
-  "<strong>": "**",
-  "</strong>": "** ",
-  "<pre>": "\n```\n",
-  "</pre>": "```\n\n",
-  "<code>": "<code>",
-  "</code>": "</code>",
-  "&lt;": "<",
-  "&gt;": ">",
-  "<sup>": "^",
-  "</sup>": "",
-  "	": "", // special tab
-  "<span.*?>": "",
-  "</span>": "",
-  '<font face="monospace">': "",
-  "</font>": "",
-};
-
 const copyText = (isMarkdown, targetObj) => {
-  // Get the current URL.
   const url = window.location.href;
+  const title = targetObj.titleDom.innerText;
+  const value = buildClipboardValue(targetObj.descriptionDom, {
+    title,
+    url,
+    isMarkdown,
+  });
 
-  // Try to find the elements for the old version of the website.
-  let title;
-  let descriptionContent;
-  let text;
-  let html;
-
-  // Get title
-  title = targetObj.titleDom.innerText;
-
-  // Get main problem description
-  descriptionContent = targetObj.descriptionDom;
-
-  // Clean the content to be copied
-  text = descriptionContent.textContent.replace(/(\n){2,}/g, "\n\n").trim();
-  html = descriptionContent.innerHTML;
-
-  // Removes unwanted elements.
-  html = html
-    .replace(/<div class=".*?" data-headlessui-state=".*?">/g, "")
-    .replace(
-      /<div id=".*?" aria-expanded=".*?" data-headlessui-state=".*?">/g,
-      ""
-    );
-
-  // Create a hidden textarea element.
   const hiddenElement = document.createElement("textarea");
-
-  let value;
-  if (isMarkdown) {
-    let htmlToMarkdown = html;
-    // Replace HTML elements with markdown equivalents.
-    Object.keys(MARKDOWN).forEach((key) => {
-      htmlToMarkdown = htmlToMarkdown.replace(
-        new RegExp(key, "g"),
-        MARKDOWN[key]
-      );
-    });
-    // Format the markdown string and add the title and URL.
-    value = `# [${title}](${url})\n\n${htmlToMarkdown
-      .replace(/(\n){2,}/g, "\n\n")
-      .trim()}`;
-  } else {
-    // Format the plain text string and add the title and URL.
-    value = `URL: ${url}\n\n${title}\n\n${text}`;
-  }
-
-  // Set the value of the hidden textarea element.
   hiddenElement.value = value;
-  // Add the element to the document.
   document.body.appendChild(hiddenElement);
-  // Select the text in the element.
   hiddenElement.select();
-  // Copy the text.
   document.execCommand("copy");
-  // Remove the hidden element from the document.
   document.body.removeChild(hiddenElement);
 };
 
