@@ -124,13 +124,9 @@ const nodeToMarkdown = (node) => {
 
   switch (tag) {
     case "code": {
+      // Use recursive nodeToMarkdown mapping instead of a shallow check
       const text = [...el.childNodes]
-        .map((child) =>
-          child.nodeType === Node.ELEMENT_NODE &&
-          child.tagName.toLowerCase() === "sup"
-            ? `^${child.textContent}`
-            : child.textContent
-        )
+        .map((child) => nodeToMarkdown(child))
         .join("")
         .replace(/\u00a0/g, " ");
       return `\`${text}\``;
