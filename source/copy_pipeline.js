@@ -123,8 +123,14 @@ const nodeToMarkdown = (node) => {
     [...el.childNodes].map((child) => nodeToMarkdown(child)).join("");
 
   switch (tag) {
-    case "code":
-      return `\`${el.textContent.replace(/\u00a0/g, " ")}\``;
+    case "code": {
+      // Use recursive nodeToMarkdown mapping instead of a shallow check
+      const text = [...el.childNodes]
+        .map((child) => nodeToMarkdown(child))
+        .join("")
+        .replace(/\u00a0/g, " ");
+      return `\`${text}\``;
+    }
     case "pre":
       return `\n\`\`\`\n${el.textContent.replace(/\u00a0/g, " ").trim()}\n\`\`\`\n\n`;
     case "strong":
@@ -170,6 +176,9 @@ const toMarkdown = (root) => normalizeWhitespace(nodeToMarkdown(root));
  * @returns {string}
  */
 const extractPlainText = (root) => {
+  root.querySelectorAll("sup").forEach((sup) => {
+    sup.replaceWith(`^${sup.textContent}`);
+  });
   const holder = document.createElement("div");
   // Do not use visibility:hidden — browsers omit that content from innerText.
   holder.style.cssText =
